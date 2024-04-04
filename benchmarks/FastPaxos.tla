@@ -28,7 +28,8 @@ VARIABLE
 VARIABLE
   \* @type: Set({term : Int, val : $value});
   ProposalMsgs,
-  \* @type: Set({rep : $rid, term : Int, vterm : Int, vval : $value});
+  \* @typeAlias: state = {rep : $rid, term : Int, vterm : Int, vval : $value};
+  \* @type: Set($state);
   StateMsgs
 
 vars == << RepTerm, RepVTerm, RepVVal, ProposalMsgs, StateMsgs>>
@@ -63,37 +64,42 @@ BroadcastState(r) ==
        vval |-> RepVVal[r]] }
   /\ UNCHANGED << RepTerm, RepVTerm, RepVVal, ProposalMsgs >>
 
-Propose ==
-  \E t \in {m.term: m \in StateMsgs}:
-  \E S \in SUBSET {m \in StateMsgs : m.term = t}:
+\* @type: (Int, Int, Set($state)) => Bool;
+Propose(v, t, S) ==
+  \* @type: Int;
+  LET max_vterm == ApaFoldSet( 
+       LAMBDA a,b: IF a < b THEN b ELSE a,
+       -10000,
+       {m.vterm: m \in S})
+     max_vterm_msgs == {m \in S: m.vterm = max_vterm}
+     max_vterm_vals == {m.vval : m \in max_vterm_msgs}
+     PossCommitable(v1) ==
+       \A r \in Replicas:
+       \/ \E m \in S: m.rep = r /\ m.vval = v1
+       \/ ~\E m \in S: m.rep = r
+    ChoosableVals == {v1 \in max_vterm_vals: PossCommitable(v1)}
+  IN
   \* One replica is sufficient to recover
   /\ \E r \in Replicas: \E m \in S: m.rep = r
-  /\ LET max_vterm == ApaFoldSet( 
-           LAMBDA a,b: IF a < b THEN b ELSE a,
-           -10000,
-           {m.vterm: m \in S})
-         PossCommitable(v) ==
-           \A r \in Replicas:
-           \/ \E m \in S: m.rep = r /\ m.vval = v
-           \/ ~\E m \in S: m.rep = r
-         max_vterm_msgs == {m \in S: m.vterm = max_vterm}
-         max_vterm_vals == {m.vval : m \in max_vterm_msgs}
-         ChoosableVals == {v \in max_vterm_vals: PossCommitable(v)}
-                    
-     IN
-     \E v \in Values:
-     \* For inductive base case
-     /\ \A lb \in ChoosableVals: lb = Nil \/ lb = v
-     \* For inductive case
-     /\ \E lb \in max_vterm_vals: lb = Nil \/ lb = v
-     /\ ProposalMsgs' = ProposalMsgs \union {[term|-> t, val |-> v]}
-     /\ UNCHANGED << RepTerm, RepVTerm, RepVVal, StateMsgs>>
+  \* For inductive base case
+  /\ \A lb \in ChoosableVals: lb = Nil \/ lb = v
+  \* For inductive case
+  /\ \E lb \in max_vterm_vals: lb = Nil \/ lb = v
+  /\ ProposalMsgs' = ProposalMsgs \union {[term|-> t, val |-> v]}
+  /\ UNCHANGED << RepTerm, RepVTerm, RepVVal, StateMsgs>>
+
+IncrTermAction == TRUE /\ \E r \in Replicas: IncrTerm(r)
+VoteAction == TRUE /\ \E r \in Replicas: Vote(r)
+BroadcastStateAction == TRUE /\ \E r \in Replicas: BroadcastState(r)
+ProposeAction == TRUE /\ \E t \in {m.term: m \in StateMsgs}, v \in Values: 
+                         \E S \in SUBSET {m \in StateMsgs : m.term = t}: 
+                         Propose(v, t, S)
 
 Next ==
-  \/ \E r \in Replicas: \/ IncrTerm(r)
-                        \/ Vote(r)
-                        \/ BroadcastState(r)
-  \/ Propose
+  \/ IncrTermAction
+  \/ VoteAction
+  \/ BroadcastStateAction
+  \/ ProposeAction
 
 \* ====================
 
