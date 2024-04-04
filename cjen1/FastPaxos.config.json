@@ -1,0 +1,28 @@
+{
+  "preds" : [
+    "(RepTerm[R1] > RepTerm[R2])",
+    "(RepTerm[R1] >= RepTerm[R2])",
+    "(RepTerm[R1] = RepTerm[R2])",
+    "(RepTerm[R1] <= RepTerm[R2])",
+    "(RepTerm[R1] < RepTerm[R2])",
+
+    "(RepTerm[R1] > RepVTerm[R2])",
+    "(RepTerm[R1] >= RepVTerm[R2])",
+    "(RepTerm[R1] = RepVTerm[R2])",
+    "(RepTerm[R1] <= RepVTerm[R2])",
+    "(RepTerm[R1] < RepVTerm[R2])",
+
+    "(RepVVal[R1] = RepVVal[R2])",
+    "(RepVVal[R1] # RepVVal[R2])",
+  ],
+  "quant_inv" : "\\A R1 \\in Replicas, \\A R2 \\in Replicas",
+  "safety" : "Safety",
+  "constants": {
+    "Replicas": ["{n1}", "{n1,n2}", "{n1,n2,n3}"],
+    "Nil": "-1",
+    "Values": ["{1}", "{1,2,3}"],
+    "MaxTerm": 3,
+  },
+  "model_consts" : "Constant n1,n2,n3",
+  "typeok" : "TypeOK",
+}
