@@ -65,6 +65,7 @@
             apalache 
             poetryEnv
             pkgs.poetry
+            pkgs.jre
           ]; 
         };
       });
