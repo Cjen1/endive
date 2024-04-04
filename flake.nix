@@ -43,8 +43,8 @@
         };
 
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
-        python = pkgs.python311;
-        pypkgs = pkgs.python311Packages;
+        python = pkgs.python39;
+        pypkgs = pkgs.python39Packages;
 
         poetryEnv = p2n.mkPoetryEnv {
           inherit python;

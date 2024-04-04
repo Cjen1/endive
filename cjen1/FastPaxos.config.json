@@ -13,16 +13,19 @@
     "(RepTerm[R1] < RepVTerm[R2])",
 
     "(RepVVal[R1] = RepVVal[R2])",
-    "(RepVVal[R1] # RepVVal[R2])",
+    "(RepVVal[R1] # RepVVal[R2])"
   ],
   "quant_inv" : "\\A R1 \\in Replicas, \\A R2 \\in Replicas",
   "safety" : "Safety",
+  "constraint": "StateConstraint",
   "constants": {
     "Replicas": ["{n1}", "{n1,n2}", "{n1,n2,n3}"],
     "Nil": "-1",
     "Values": ["{1}", "{1,2,3}"],
-    "MaxTerm": 3,
+    "MaxTerm": 3
   },
   "model_consts" : "Constant n1,n2,n3",
+  "symmetry": "Symmetry",
   "typeok" : "TypeOK",
+  "simulate": true
 }
